@@ -1,0 +1,13 @@
+# Ambiente Virtual
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Arquivos de Dados (opcional, mas recomendado se forem grandes)
+data/*.csv
+data/*.xlsx
+
+# Checkpoints do Jupyter
+.ipynb_checkpoints/
