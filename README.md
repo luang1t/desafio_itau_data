@@ -22,5 +22,11 @@ Este projeto faz parte de um desafio técnico para análise de dados.
 
 \- Pandas
 
+\- FAKER
+
+\- RANDOM
+
+\- SQLITE
+
 \- Git/GitHub
 
