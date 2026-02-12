@@ -5,13 +5,17 @@ import pandas as pd
 fake = Faker(locale='pt-BR') #REFERENCIANDO DE QUAL REGIÃO OS NOMES SERÃO RANDOMIZADOS
 
 def criar_cliente(): #FUNCAO PARA CRIAR CLIENTES
+
     operacoes = ['PIX','TED','DOC']
-    valor_transacao = uniform(100,10000) #RANDOMIZANDO O VALOR DA TRANSACAO ENTRE 100 E 10000 COM FLOAT
     categorias = ['MERCADO','LAZER','CONTAS']
+    status = ['CONCLUIDA','FALHA','PENDENTE']
+    valor_transacao = uniform(100,10000) #RANDOMIZANDO O VALOR DA TRANSACAO ENTRE 100 E 10000 COM FLOAT
+
     return {
         'operacao':choice(operacoes), #ESCOLHENDO RANDOMICANTE AS OPCOES DA LISTA DE OPERACOES
-        'valor' : valor_transacao,
         'categoria' : choice(categorias), #ESCOLHENDO RANDOMICANTE AS OPCOES DA LISTA DE OPERACOES
+        'status':choice(status), #ESCOLHENDO RANDOMICAMENTE AS OPCOES DA LISTA DE STATUS
+        'valor' : valor_transacao,
         'nome': fake.name() #CRIANDO NOMES ALEATORIOS BRASILEIROS
     }
 
@@ -25,7 +29,7 @@ for cadastro in range(numero_clientes): #ESTRUTURA DE REPETICAO CRIADA PARA CADA
 
 
 for indice, cliente in enumerate (lista_clientes, start = 1):
-        print(f'{indice}º: O {cliente["nome"]} escolheu {cliente["operacao"]} e transferiu R${cliente["valor"]:.2f} na categoria {cliente["categoria"]}.')
+        print(f'{indice}º: O {cliente["nome"]} escolheu {cliente["operacao"]} e transferiu R${cliente["valor"]:.2f} na categoria {cliente["categoria"]}. {cliente["status"]}')
 
 print("Gerando arquivo CSV...")
 
