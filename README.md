@@ -28,5 +28,7 @@ Este projeto faz parte de um desafio técnico para análise de dados.
 
 \- SQLITE
 
+\- MATPLOTLIB
+
 \- Git/GitHub
 
