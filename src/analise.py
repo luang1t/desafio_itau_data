@@ -2,84 +2,55 @@ import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt  
 
-conn = sqlite3.connect('bradesco.db')
 
-#TOTAL DE DINHEIRO MOVIMENTADO
-query01 = "SELECT SUM(valor) as Total_Movimentado FROM transacoes " #SELECIONANDO E SOMANDO O TOTAL MOVIMENTADO NA TABELA
-df_total = pd.read_sql(query01,conn)
+def conectar_banco():
+    return sqlite3.connect('./data/bradesco.db')
 
-#QUANTAS FALHAS TIVEMOS
-query02 = "SELECT COUNT(*) as Qtd_Falhas FROM transacoes WHERE status = 'FALHA' " #SELECIONANDO E CONTANDO OS NUMEROS DE FALHAS
-df_falhas = pd.read_sql(query02,conn)
+def imprimir_ranking(titulo, dataframe, col_nome, col_valor):
+    print(f"\n--- {titulo} ---")
+    for idx, row in dataframe.iterrows():
+        print(f"{idx+1}º | {row[col_nome]:<15} | R$ {row[col_valor]:,.2f}")
 
-#TOTAL OPERACAO POR PIX
-query03 = "SELECT SUM(valor) as Qtd_PIX FROM transacoes WHERE operacao = 'PIX' "
-df_pix_operacao = pd.read_sql(query03,conn)
 
-#RANKING DAS OPERAÇÕES
-query04 = "SELECT operacao, SUM(valor) as cada_operacao_total FROM transacoes GROUP BY operacao ORDER BY cada_operacao_total DESC"
-df_total_operacoes = pd.read_sql(query04,conn)
 
-#RANKING DAS CATEGORIAS
-query05 = "SELECT categoria, SUM(valor) as maior_por_categoria FROM transacoes GROUP BY categoria ORDER BY maior_por_categoria DESC"
-df_maior_por_categoria = pd.read_sql(query05,conn)
+def main():
+    conn = conectar_banco()
 
-#RANKING DAS OPERAÇÕES DENTRO DA CATEGORIA LAZER
-query06 = "SELECT categoria, operacao, SUM(valor) as lazer_oper_mais_realizadas FROM transacoes WHERE categoria = 'LAZER' GROUP BY operacao ORDER BY lazer_oper_mais_realizadas DESC"
-df_lazer_oper_mais_realizadas = pd.read_sql(query06,conn)
+    #Extração de dados(ETL)
+    df_total = pd.read_sql("SELECT SUM(valor) as Total_Movimentado FROM transacoes", conn)
+    df_falha = pd.read_sql("SELECT COUNT(*) as Qtd_Falhas FROM transacoes WHERE status = 'FALHA'", conn)
 
-#
-query07 = "SELECT valor FROM transacoes"
-df_todas = pd.read_sql(query07, conn)
+    df_ranking_operacoes = pd.read_sql("""
+                            SELECT operacao, SUM(valor) as ranking_operacoes 
+                            FROM transacoes 
+                            GROUP BY operacao ORDER BY ranking_operacoes DESC
+                        """, conn)  
+      
+    df_rankin_oper_lazer = pd.read_sql("""
+                            SELECT operacao, SUM(valor) as ranking_oper_lazer 
+                            FROM transacoes WHERE categoria = 'LAZER' 
+                            GROUP BY operacao ORDER BY ranking_oper_lazer DESC
+                        """, conn)
+    
+    print("RELATÓRIO TERMINAL")
+    print(F"Total Movimentado: R$ {df_total.iloc[0,0]:,.2f}") #Usei .iloc[0,0] para especificar que quero o elemento da linha 0 coluna 0
+    print(f"Total de Falhas: {df_falha.iloc[0,0]}")
 
-print('--- Resultado da pesquisa ---')
-print(f'Total de dinheiro movimentado:\nR$:{df_total['Total_Movimentado'][0]:,.2f}')#AQUI USAMOS O [0] PARA REFERENCIAR O INDICE DA TABELA QUE QUEREMOS
+    imprimir_ranking("Ranking Geral", df_ranking_operacoes, "operacao", "ranking_operacoes")
+    imprimir_ranking("Ranking Operações em Lazer",df_rankin_oper_lazer,"operacao", "ranking_oper_lazer")
 
-'''
-Total_Movimentado
-0    |  489239.31
-'''
-print(f'Total de falhas na operação: {df_falhas['Qtd_Falhas'][0]}')#AQUI USAMOS O [0] PARA REFERENCIAR O INDICE DA TABELA QUE QUEREMOS
+    fig,(ax1,ax2) = plt.subplots(1,2, figsize=(12,5))
+    
+    ax1.bar(df_ranking_operacoes['operacao'],df_ranking_operacoes['ranking_operacoes'], color = ['#cc0000', '#333333', '#999999'])
+    ax1.set_title("Volume por Operação")
 
-'''
-Qtd_Falhas
-0    |  2
-'''
+    ax2.pie(df_ranking_operacoes['ranking_operacoes'], labels=df_ranking_operacoes['operacao'], autopct='%1.1f%%')
+    ax2.set_title("Share de Mercado")
 
-print(f'Operações PIX:\nR$:{df_pix_operacao['Qtd_PIX'][0]:,.2f}')
+    plt.tight_layout()
+    plt.show()
 
-print("Ranking das OPERAÇÕES")
-for index, linha in df_total_operacoes.iterrows():
-    print(f"{index+1}º Lugar: {linha['operacao']} R$:{linha['cada_operacao_total']:,.2f}")
+    conn.close()
 
-print("-*-"*20)
-print("Ranking das CATEGORIAS")
-for index, linha in df_maior_por_categoria.iterrows():
-    print(f"{index+1}º Lugar {linha['categoria']} R$:{linha['maior_por_categoria']:,.2f}")
-
-print("-*-"*20)
-print("Ranking das OPERAÇÕES em CATEGORIAS")
-for index,linha in df_lazer_oper_mais_realizadas.iterrows():
-    print(f"{index+1}º Lugar {linha['operacao']} R$:{linha['lazer_oper_mais_realizadas']:,.2f}")
-
-#---------------------------------------------------------------------------------------------------
-operacoes = df_total_operacoes['operacao']
-valores = df_total_operacoes['cada_operacao_total']
-valores_categorias = df_maior_por_categoria['maior_por_categoria']
-rankin_operacao_lazer = df_lazer_oper_mais_realizadas['lazer_oper_mais_realizadas']
-
-plt.figure(1,figsize=(8, 5))
-plt.bar(operacoes,valores,color=['#cc0000','#00ff00','#0000ff'])
-plt.title("Volume Financeiro por Operação")
-plt.ylabel("Valor Total (R$)")
-plt.xlabel("Tipo de Operação")
-plt.show()
-
-plt.figure(2)
-plt.hist(df_todas['valor'], bins=10, color='green', edgecolor='black')
-plt.title('Distribuição dos valores (Histograma)')
-plt.xlabel('Faixas de Valor (R$)')
-plt.ylabel('Quantidade de Transações')
-plt.show()
-
-conn.close()
+if __name__ == "__main__":
+    main()
