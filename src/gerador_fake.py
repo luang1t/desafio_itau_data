@@ -16,7 +16,7 @@ def criar_cliente(qtd_clientes = 1000): #FUNCAO PARA CRIAR CLIENTES
     operacoes = ['PIX','TED','DOC']
     categorias = ['MERCADO','LAZER','CONTAS']
     status = ['CONCLUIDA','FALHA','PENDENTE']
-    pesos = [0.95 , 0.03 , 0.01]
+    pesos = [0.95 , 0.01 , 0.03]
         
 
     print(f"Gerando {qtd_clientes} clientes...")

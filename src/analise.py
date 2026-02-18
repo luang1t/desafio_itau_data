@@ -1,11 +1,16 @@
 import sqlite3
 import pandas as pd
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+from matplotlib.ticker import FuncFormatter
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent
 DB_PATH = BASE_DIR / 'data' / 'bradesco.db'
 
+
+def formatar_milhoes(x,pos):
+    milhoes = x / 1_000_000
+    return f"R$ {milhoes:.1f}M"
 
 def conectar_banco():
     return sqlite3.connect(DB_PATH)
@@ -14,8 +19,6 @@ def imprimir_ranking(titulo, dataframe, col_nome, col_valor):
     print(f"\n--- {titulo} ---")
     for idx, row in dataframe.iterrows():
         print(f"{idx+1}º | {row[col_nome]:<15} | R$ {row[col_valor]:,.2f}")
-
-
 
 def main():
     conn = conectar_banco()
@@ -44,9 +47,15 @@ def main():
     imprimir_ranking("Ranking Operações em Lazer",df_rankin_oper_lazer,"operacao", "ranking_oper_lazer")
 
     fig,(ax1,ax2) = plt.subplots(1,2, figsize=(12,5))
+
     
     ax1.bar(df_ranking_operacoes['operacao'],df_ranking_operacoes['ranking_operacoes'], color = ['#cc0000', '#333333', '#999999'])
     ax1.set_title("Volume por Operação")
+
+    #FORMATANDO OS VALORES DO GRAFICO PARA EX: 1M
+    formatter = FuncFormatter(formatar_milhoes)
+    ax1.yaxis.set_major_formatter(formatter)
+    ax1.set_ylabel("Total Movimentado")
 
     ax2.pie(df_ranking_operacoes['ranking_operacoes'], labels=df_ranking_operacoes['operacao'], autopct='%1.1f%%')
     ax2.set_title("Share de Mercado")
