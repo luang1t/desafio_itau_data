@@ -31,9 +31,13 @@ def salvar_no_banco(df):
         if 'conn' in locals():
             conn.close()
 
-if __name__ == '__main__':
+def run_etl():
     try:
         df_banco = carregar_dados_csv()
         salvar_no_banco(df_banco)
     except Exception as erro:
         print(f"Falha no processo ETL: {erro}")
+
+
+if __name__ == '__main__':
+    run_etl()

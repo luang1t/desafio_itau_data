@@ -1,10 +1,14 @@
 import sqlite3
 import pandas as pd
-import matplotlib.pyplot as plt  
+import matplotlib.pyplot as plt 
+from pathlib import Path
+
+BASE_DIR = Path(__file__).parent.parent
+DB_PATH = BASE_DIR / 'data' / 'bradesco.db'
 
 
 def conectar_banco():
-    return sqlite3.connect('./data/bradesco.db')
+    return sqlite3.connect(DB_PATH)
 
 def imprimir_ranking(titulo, dataframe, col_nome, col_valor):
     print(f"\n--- {titulo} ---")
