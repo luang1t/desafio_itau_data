@@ -32,3 +32,4 @@ Este projeto faz parte de um desafio técnico para análise de dados.
 
 \- Git/GitHub
 
+![Texto Alternativo](analise_fig1.png)
